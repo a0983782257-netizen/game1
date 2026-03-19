@@ -22,16 +22,18 @@ body {
 /* 左邊關卡 */
 #levels {
   display: flex;
-  flex-direction: column-reverse; /* 由下到上 */
+  flex-direction: column-reverse;
   margin-right: 20px;
 }
 
 .level {
   height: 80px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;        /* 垂直置中 */
+  justify-content: flex-end;  /* 靠右貼齊格子 */
+  padding-right: 12px;
   font-weight: bold;
+  font-size: 18px;
 }
 
 /* 右邊格子 */
@@ -50,6 +52,14 @@ body {
   height: 80px;
   border: 2px solid black;
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 3px black;
 }
 
 /* 顏色 */
@@ -69,11 +79,11 @@ button {
 
 <h2>🎮 闖關棋盤（4人同步）</h2>
 
-<!-- 玩家選擇 -->
-<button onclick="setPlayer('red')">紅</button>
-<button onclick="setPlayer('blue')">藍</button>
-<button onclick="setPlayer('green')">綠</button>
-<button onclick="setPlayer('yellow')">黃</button>
+<!-- 玩家 -->
+<button onclick="setPlayer('red')">紅 (R)</button>
+<button onclick="setPlayer('blue')">藍 (B)</button>
+<button onclick="setPlayer('green')">綠 (G)</button>
+<button onclick="setPlayer('yellow')">黃 (Y)</button>
 
 <h3 id="current">目前玩家：未選擇</h3>
 
@@ -89,7 +99,7 @@ button {
 
 <script>
 
-// 🔴 Firebase 設定（請確認這段是你的）
+// 🔴 Firebase 設定（請確認）
 const firebaseConfig = {
   apiKey: "你的KEY",
   authDomain: "easy-1192d.firebaseapp.com",
@@ -109,21 +119,21 @@ function setPlayer(color) {
   document.getElementById("current").innerText = "目前玩家：" + color;
 }
 
-// 🧱 建立版面
+// 🧱 建立棋盤
 function createBoard() {
   const levelsDiv = document.getElementById("levels");
   const board = document.getElementById("board");
 
   for (let level = 1; level <= 10; level++) {
 
-    // 左邊關卡
+    // 左側關卡
     const levelDiv = document.createElement("div");
     levelDiv.className = "level";
     levelDiv.innerText = level;
 
     levelsDiv.appendChild(levelDiv);
 
-    // 右邊格子
+    // 右側格子
     const row = document.createElement("div");
     row.className = "row";
 
@@ -159,7 +169,7 @@ function clickCell(i) {
 
 // 🔄 Reset
 function resetBoard() {
-  if (!confirm("確定要重置？")) return;
+  if (!confirm("確定要重置全部？")) return;
 
   for (let i = 0; i < 40; i++) {
     db.ref("grid/" + i).remove();
@@ -175,9 +185,17 @@ db.ref("grid").on("value", snap => {
     if (!cell) continue;
 
     cell.className = "cell";
+    cell.innerText = "";
 
     if (data[i]) {
-      cell.classList.add(data[i]);
+      const color = data[i];
+      cell.classList.add(color);
+
+      // 色盲文字
+      if (color === "red") cell.innerText = "R";
+      if (color === "blue") cell.innerText = "B";
+      if (color === "green") cell.innerText = "G";
+      if (color === "yellow") cell.innerText = "Y";
     }
   }
 });
