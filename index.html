@@ -118,7 +118,7 @@ function setPlayer(color) {
 function createBoard() {
   const board = document.getElementById("board");
 
-  for (let level = 1; level <= 10; level++) {
+  for (let level = 10; level >= 1; level--) {
 
     const row = document.createElement("div");
     row.className = "row";
