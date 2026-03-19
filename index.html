@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>闖關棋盤</title>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -13,11 +14,35 @@ body {
   text-align: center;
 }
 
-.grid {
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+/* 左邊關卡 */
+#levels {
+  display: flex;
+  flex-direction: column-reverse; /* 由下到上 */
+  margin-right: 20px;
+}
+
+.level {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* 右邊格子 */
+.row {
+  margin: 10px 0;
+}
+
+.cells {
   display: grid;
   grid-template-columns: repeat(4, 80px);
   gap: 10px;
-  justify-content: center;
 }
 
 .cell {
@@ -27,15 +52,16 @@ body {
   cursor: pointer;
 }
 
+/* 顏色 */
 .red { background: red; }
 .blue { background: blue; }
 .green { background: green; }
 .yellow { background: goldenrod; }
 
-.selector button {
+button {
   margin: 5px;
+  padding: 6px 10px;
 }
-
 </style>
 </head>
 
@@ -43,26 +69,27 @@ body {
 
 <h2>🎮 闖關棋盤（4人同步）</h2>
 
-<!-- 選玩家 -->
-<div class="selector">
-  <button onclick="setPlayer('red')">紅</button>
-  <button onclick="setPlayer('blue')">藍</button>
-  <button onclick="setPlayer('green')">綠</button>
-  <button onclick="setPlayer('yellow')">黃</button>
-</div>
+<!-- 玩家選擇 -->
+<button onclick="setPlayer('red')">紅</button>
+<button onclick="setPlayer('blue')">藍</button>
+<button onclick="setPlayer('green')">綠</button>
+<button onclick="setPlayer('yellow')">黃</button>
 
 <h3 id="current">目前玩家：未選擇</h3>
 
-<!-- 🔄 Reset 按鈕 -->
+<!-- Reset -->
 <button onclick="resetBoard()">🔄 重置全部</button>
 
 <br><br>
 
-<div class="grid" id="grid"></div>
+<div class="container">
+  <div id="levels"></div>
+  <div id="board"></div>
+</div>
 
 <script>
 
-// Firebase 設定（已填好）
+// 🔴 Firebase 設定（請確認這段是你的）
 const firebaseConfig = {
   apiKey: "你的KEY",
   authDomain: "easy-1192d.firebaseapp.com",
@@ -76,52 +103,76 @@ const db = firebase.database();
 
 let currentPlayer = null;
 
-// 選玩家
+// 👤 選玩家
 function setPlayer(color) {
   currentPlayer = color;
   document.getElementById("current").innerText = "目前玩家：" + color;
 }
 
-// 建立40格
-function createGrid() {
-  const grid = document.getElementById("grid");
+// 🧱 建立版面
+function createBoard() {
+  const levelsDiv = document.getElementById("levels");
+  const board = document.getElementById("board");
 
-  for (let i = 0; i < 40; i++) {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.id = "cell_" + i;
+  for (let level = 1; level <= 10; level++) {
 
-    cell.onclick = () => clickCell(i);
+    // 左邊關卡
+    const levelDiv = document.createElement("div");
+    levelDiv.className = "level";
+    levelDiv.innerText = level;
 
-    grid.appendChild(cell);
+    levelsDiv.appendChild(levelDiv);
+
+    // 右邊格子
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const cells = document.createElement("div");
+    cells.className = "cells";
+
+    for (let i = 0; i < 4; i++) {
+      const index = (level - 1) * 4 + i;
+
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.id = "cell_" + index;
+
+      cell.onclick = () => clickCell(index);
+
+      cells.appendChild(cell);
+    }
+
+    row.appendChild(cells);
+    board.appendChild(row);
   }
 }
 
 // 點擊格子
 function clickCell(i) {
   if (!currentPlayer) {
-    alert("先選玩家！");
+    alert("請先選玩家");
     return;
   }
 
   db.ref("grid/" + i).set(currentPlayer);
 }
 
-// 🔄 重置功能
+// 🔄 Reset
 function resetBoard() {
-  if (!confirm("確定要重置全部嗎？")) return;
+  if (!confirm("確定要重置？")) return;
 
   for (let i = 0; i < 40; i++) {
     db.ref("grid/" + i).remove();
   }
 }
 
-// 即時同步
+// 🔄 即時同步
 db.ref("grid").on("value", snap => {
   const data = snap.val() || {};
 
   for (let i = 0; i < 40; i++) {
     const cell = document.getElementById("cell_" + i);
+    if (!cell) continue;
 
     cell.className = "cell";
 
@@ -131,7 +182,7 @@ db.ref("grid").on("value", snap => {
   }
 });
 
-createGrid();
+createBoard();
 
 </script>
 
