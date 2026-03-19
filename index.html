@@ -14,39 +14,31 @@ body {
   text-align: center;
 }
 
-.container {
+/* 每一列 */
+.row {
   display: flex;
+  align-items: center;
+  margin: 10px 0;
   justify-content: center;
 }
 
-/* 左邊關卡 */
-#levels {
-  display: flex;
-  flex-direction: column-reverse;
-  margin-right: 20px;
-}
-
+/* 關卡數字 */
 .level {
-  height: 80px;
-  display: flex;
-  align-items: center;        /* 垂直置中 */
-  justify-content: flex-end;  /* 靠右貼齊格子 */
-  padding-right: 12px;
+  width: 60px;
+  text-align: right;
+  padding-right: 10px;
   font-weight: bold;
   font-size: 18px;
 }
 
-/* 右邊格子 */
-.row {
-  margin: 10px 0;
-}
-
+/* 4格 */
 .cells {
   display: grid;
   grid-template-columns: repeat(4, 80px);
   gap: 10px;
 }
 
+/* 每個格子 */
 .cell {
   width: 80px;
   height: 80px;
@@ -68,6 +60,7 @@ body {
 .green { background: green; }
 .yellow { background: goldenrod; }
 
+/* 按鈕 */
 button {
   margin: 5px;
   padding: 6px 10px;
@@ -92,14 +85,12 @@ button {
 
 <br><br>
 
-<div class="container">
-  <div id="levels"></div>
-  <div id="board"></div>
-</div>
+<!-- 棋盤 -->
+<div id="board"></div>
 
 <script>
 
-// 🔴 Firebase 設定（請確認）
+// 🔴 Firebase設定（請確認）
 const firebaseConfig = {
   apiKey: "你的KEY",
   authDomain: "easy-1192d.firebaseapp.com",
@@ -119,24 +110,21 @@ function setPlayer(color) {
   document.getElementById("current").innerText = "目前玩家：" + color;
 }
 
-// 🧱 建立棋盤
+// 🧱 建立棋盤（重點）
 function createBoard() {
-  const levelsDiv = document.getElementById("levels");
   const board = document.getElementById("board");
 
   for (let level = 1; level <= 10; level++) {
 
-    // 左側關卡
+    const row = document.createElement("div");
+    row.className = "row";
+
+    // 左邊數字
     const levelDiv = document.createElement("div");
     levelDiv.className = "level";
     levelDiv.innerText = level;
 
-    levelsDiv.appendChild(levelDiv);
-
-    // 右側格子
-    const row = document.createElement("div");
-    row.className = "row";
-
+    // 右邊 4 格
     const cells = document.createElement("div");
     cells.className = "cells";
 
@@ -152,7 +140,9 @@ function createBoard() {
       cells.appendChild(cell);
     }
 
+    row.appendChild(levelDiv);
     row.appendChild(cells);
+
     board.appendChild(row);
   }
 }
